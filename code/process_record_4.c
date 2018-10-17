@@ -60,6 +60,7 @@ int main(int argc, char **argv)
 				}
 			}
 			if (timed == 1 && max_messages < rp->message_num){
+				max_messages = rp->message_num;
 				userId = rp->id;
 			}
 		}
