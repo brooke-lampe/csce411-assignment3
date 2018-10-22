@@ -51,16 +51,15 @@ int main(int argc, char **argv)
 		
 		if(isNebraska != NULL) {
 			int j;
-			int timed = 0;
+			int num_of_messages = 0;
 			for(j = 0; j < rp->message_num; j++) {
 				message_t *message = &(rp->messages[j]);
 				if (message->hour == 8 || (message->hour == 9 && message->minute == 0)){
-					timed = 1;
-					j = rp->message_num;
+					num_of_messages++;
 				}
 			}
-			if (timed == 1 && max_messages < rp->message_num){
-				max_messages = rp->message_num;
+			if (max_messages < num_of_messages){
+				max_messages = num_of_messages;
 				userId = rp->id;
 			}
 		}
