@@ -1,8 +1,6 @@
-transform_record : transform_record.o record.o
-					gcc -lm -o transform_record
-
-transform_record.o : transform.c 
-				  	gcc transform_record.c record.c 
+transform_record : transform_record.c record.c
+					gcc -lm transform_record.c record.c  -o transform_record
 
 clean :
-					rm transform_record transform_record.o
+					rm transform_record
+					rm -rf data
