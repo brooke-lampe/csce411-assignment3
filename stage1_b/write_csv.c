@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 			sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d", message->year, message->month,  message->day,  message->hour,  message->minute, 0);
 			char *text = message->text;
 			text[strlen(text)-1] = 0;
-			fprintf(fp_messages,"%d,%d,%s,%s\n", message_id, rp->id, message->text, datetime);
+			fprintf(fp_messages,"%d,%d,%s,\"%s\"\n", message_id, rp->id, message->text, datetime);
 			message_id++;
 		}    
     
