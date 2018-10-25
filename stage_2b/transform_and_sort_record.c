@@ -1,10 +1,13 @@
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/time.h>
 #include "helper/record.h"
 
 void remove_trailing_comma(char * location);
 void transform_record(int first_record_id, int last_record_id);
 void sort_records(int first_record_id, int last_record_id);
+int compareByName(const void *a, const void *b);
 
 struct message {
     int user_id;
@@ -17,6 +20,8 @@ struct user {
     char name[TEXT_SHORT];
     char location[TEXT_LONG]; /* Sorting by location */
 };
+
+
 
 int main(int argc, char **argv)
 {
@@ -123,18 +128,47 @@ void transform_record(int first_record_id, int last_record_id) {
 /* Assuming transform_record has already been run */
 void sort_records(int first_record_id, int last_record_id) {
     char path[TEXT_SHORT];
+    char buffer[160];
+    char other[160];
     FILE *user_fp;
-    struct user users[last_record_id-first_record_id];
+    struct user users[last_record_id-first_record_id+1];
     int i;
-    for (i = first_record_id; i <= last_record_id; i++) {
-        sprintf(path, "data/user_%06d", i);
+    for (i = 0; i <= (last_record_id-first_record_id); i++) {
+        sprintf(path, "data/user_%06d.dat", first_record_id+i);
         user_fp = fopen(path, "r");
-        int j;
-        while (fscanf(user_fp, "%06d\t%s\t%s\n", &j, users[i].name, users[i].location) != EOF);
-
+        while(fscanf(user_fp, "%d\t%[^\t]\t%[^\n]\n", &users[i].user_id, users[i].name, users[i].location) != EOF) ;
+        fclose(user_fp);
     }
-    printf("%s \n %s", users[9].location, users[9].name);
 
+    /* enter how query should be filtered */
+    qsort(users, last_record_id-first_record_id+1, sizeof(struct user), compareByName);
+    
+    /* FOR DEBUGGING PURPOSES */
+    printf("MAYBE SORTED NAMES: \n");
+    for (i = 0; i <= (last_record_id-first_record_id); i++) {
+        printf("Reocrd: %d\t%s\t%s\n", users[i].user_id, users[i].name, users[i].location);
+    }
+    
+    for (i = 0; i <= (last_record_id-first_record_id); i++) {
+        sprintf(path, "data/user_%06d.dat", first_record_id+i);
+        user_fp = fopen(path, "w");
+        fprintf(user_fp, "%06d\t%s\t%s\n", users[i].user_id, users[i].name, users[i].location);
+        fclose(user_fp);
+    }
+
+
+}
+
+int compareByName(const void *a, const void *b) {
+     struct user *user1 = (struct user *)a;
+     struct user *user2 = (struct user *)b;
+     return strcmp(user1->name, user2->name); 
+}
+
+int compareByLocation(const void *a, const void *b) {
+     struct user *user1 = (struct user *)a;
+     struct user *user2 = (struct user *)b;
+     return strcmp(user1->location, user2->location); 
 }
 
 void remove_trailing_comma(char * location) {

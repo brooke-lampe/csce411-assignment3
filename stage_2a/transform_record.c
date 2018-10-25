@@ -1,4 +1,5 @@
 #include <math.h>
+#include <sys/time.h>
 #include "helper/record.h"
 
 void remove_trailing_comma(char * location);
@@ -21,7 +22,10 @@ int main(int argc, char **argv)
     char location_format[TEXT_SHORT];
     system("rm -rf ./data");
     system("mkdir ./data");
-
+    
+    struct timeval time_start, time_end;
+    gettimeofday(&time_start, NULL);
+    
     for (i = first_record_id; i <= last_record_id; i++) {
 
         sprintf(filename, "../data/record_%06d.dat", i);
@@ -74,18 +78,25 @@ int main(int argc, char **argv)
                 message_record_filenumber++; 
                 messages_in_file = 0;
                 sprintf(path, "data/message_%06d.dat", message_record_filenumber);
-                fopen(path, "w+");                
+                message_file = fopen(path, "w+");                
             }
-
+            fprintf(message_file, "%d\t", rp->id);
             fprintf(message_file, "%d/%d/%d %d:%d\t", rp->messages[j].month, rp->messages[j].day, rp->messages[j].year, rp->messages[j].hour, rp->messages[j].minute);
             fprintf(message_file, "%s\n", rp->messages[j].text);
             messages_in_file++;
         }
-
+        fclose(fp);
 
     }
     fclose(message_file);
-
+    gettimeofday(&time_end, NULL);
+    
+    float totaltime = (time_end.tv_sec - time_start.tv_sec)
+                    + (time_end.tv_usec - time_start.tv_usec) / 1000000.0f;
+                    
+         
+                    
+    printf("\n\nProcess time %f seconds\n", totaltime);
     return 0;
 }
 
