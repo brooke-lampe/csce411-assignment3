@@ -44,8 +44,7 @@ int main(int argc, char **argv)
         }
 		record_t *rp = read_record(fp);
 		char *location = rp->location;
-		location[strlen(location)-1] = 0;
-		location[strlen(location)-1] = 0;
+		location[strlen(location)-2] = 0;
 		fprintf(fp_users,"%d,%s,\"%s\"\n", rp->id, rp->name, rp->location);
 
 		for(j = 0; j < rp->message_num; j++) {
