@@ -20,6 +20,7 @@ void remove_trailing_comma(char * location);
 void transform_record(int first_record_id, int last_record_id);
 void sort_records(int first_record_id, int last_record_id);
 int compareByName(const void *a, const void *b);
+int compareByLocation(const void *a, const void *b);
 int compare_by_date(const void *a, const void *b);
 
 int main(int argc, char **argv)
