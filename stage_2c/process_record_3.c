@@ -135,8 +135,103 @@ int main(int argc, char **argv)
 			fclose(message_fp);
 		}
 	}
+	int arrSize = counter;
 	
-	printf("Number of users sending messages between 8am and 9am: %d\n", counter);
+	char location[TEXT_SHORT];
+    FILE *user_fp;
+	counter = 0;
+	low = first_record_id;
+	high = last_record_id;
+	save = -1;
+	char comma[2] = ",";
+	char * token1;
+	char * token2;
+	
+	while(low <= high) {
+		mid = low + (high - low) / 2;
+		sprintf(path, "data/user_%06d.dat", mid);
+		user_fp = fopen(path, "r");
+		
+		fscanf(user_fp, "%d\t%*[^\t]\t%[^\n]\n", &user_id, location);
+		fclose(user_fp);
+		
+		token1 = strtok(location, comma);
+		token2 = strtok(NULL, comma);
+		if(token2 == NULL) {
+			token2 = token1;
+		}
+		//printf("1st token2 %s\n", token2);
+		
+		if(strcmp(token2, "Nebraska") == 0) {
+			//if equal break loop
+			//printf("1st user_id %d\n", user_id);
+			if(inArray(user_id, arr, arrSize)) {
+				counter++;
+			}
+			save = mid;
+			break;
+		} else if (strcmp(token2, "Nebraska") < 0) {
+			//if smaller then check upper list
+			low = mid + 1;
+		} else {
+			//if larger then check lower list
+			high = mid - 1;
+		}
+	}
+	
+	if(save != -1) {
+		//Check above and below
+		while(mid >= low) {
+			mid--;
+			sprintf(path, "data/user_%06d.dat", mid);
+			user_fp = fopen(path, "r");
+			
+			fscanf(user_fp, "%d\t%*[^\t]\t%[^\n]\n", &user_id, location);
+			fclose(user_fp);
+			
+			token1 = strtok(location, comma);
+			token2 = strtok(NULL, comma);
+			if(token2 == NULL) {
+				token2 = token1;
+			}
+			//printf("2nd token2 %s\n", token2);
+			
+			if(strcmp(token2, "Nebraska") == 0) {
+				//printf("2nd user_id %d\n", user_id);
+				if(inArray(user_id, arr, arrSize)) {
+					counter++;
+				}
+			} else {
+				break;
+			}
+		}
+		while(save <= high) {
+			save++;
+			sprintf(path, "data/user_%06d.dat", save);
+			user_fp = fopen(path, "r");
+			
+			fscanf(user_fp, "%d\t%*[^\t]\t%[^\n]\n", &user_id, location);
+			fclose(user_fp);
+			
+			token1 = strtok(location, comma);
+			token2 = strtok(NULL, comma);
+			if(token2 == NULL) {
+				token2 = token1;
+			}
+			//printf("3rd token2 %s\n", token2);
+			
+			if(strcmp(token2, "Nebraska") == 0) {
+				//printf("3rd user_id %d\n", user_id);
+				if(inArray(user_id, arr, arrSize)) {
+					counter++;
+				}
+			} else {
+				break;
+			}
+		}
+	}
+	
+	printf("Number of Nebraska users sending messages between 8am and 9am: %d\n", counter);
 	
 	/* =========== end of data processing code ================ */
 	gettimeofday(&time_end, NULL);

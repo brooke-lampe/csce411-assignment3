@@ -25,6 +25,8 @@ int compareByLocation(const void *a, const void *b);
 int compare_by_date(const void *a, const void *b);
 int compare_by_time(const void *a, const void *b);
 bool inArray(int val, int * arr, int size);
+int toMatrix(int val, int matrix[4000][2], int size);
+int inMatrix(int val, int matrix[4000][2], int size);
 
 int main(int argc, char **argv)
 {
@@ -54,7 +56,7 @@ int main(int argc, char **argv)
 	int mid;
 	int save = -1;
 	int user_id, hour, minutes;
-	int arr[4000];
+	int matrix[4000][2];
 	int flag = 0, flagA = 0, flagB = 0;
 	
 	while((low <= high) && (flag == 0)) {
@@ -67,13 +69,8 @@ int main(int argc, char **argv)
 			
 			if(hour == 8 || (hour == 9 && minutes == 0)) {
 				//if equal set flag
-				//if flag is zero, there is nothing in the array to check for duplicates
-				//if flag is nonzero, check the array for duplicates
-				if((flag == 0) || (!inArray(user_id, arr, counter))) {
-					arr[counter] = user_id;
-					counter++;
-					//printf("1st user ids %d  %d:%d\n", user_id, hour, minutes);
-				}
+				counter = toMatrix(user_id, matrix, counter);
+				//printf("1st user ids %d  %d:%d\n", user_id, hour, minutes);
 				save = mid;
 				//flag will cause outer loop to exit when we are done checking the file
 				flag = 1;
@@ -99,11 +96,8 @@ int main(int argc, char **argv)
 				sscanf(date, "%*d/%*d/%*d %d:%d", &hour, &minutes);
 				
 				if(hour == 8 || (hour == 9 && minutes == 0)) {
-					if(!inArray(user_id, arr, counter)) {
-						arr[counter] = user_id;
-						counter++;
-						//printf("2nd user ids %d  %d:%d\n", user_id, hour, minutes);
-					}
+					counter = toMatrix(user_id, matrix, counter);
+					//printf("2nd user ids %d  %d:%d\n", user_id, hour, minutes);
 				} else {
 					//flag will cause outer loop to exit when we are done checking the file
 					flagA = 1;
@@ -122,11 +116,8 @@ int main(int argc, char **argv)
 				sscanf(date, "%*d/%*d/%*d %d:%d", &hour, &minutes);
 				
 				if(hour == 8 || (hour == 9 && minutes == 0)) {
-					if(!inArray(user_id, arr, counter)) {
-						arr[counter] = user_id;
-						counter++;
-						//printf("3rd user ids %d  %d:%d\n", user_id, hour, minutes);
-					}
+					counter = toMatrix(user_id, matrix, counter);
+					//printf("3rd user ids %d  %d:%d\n", user_id, hour, minutes);
 				} else {
 					//flag will cause outer loop to exit when we are done checking the file
 					flagB = 1;
@@ -135,8 +126,118 @@ int main(int argc, char **argv)
 			fclose(message_fp);
 		}
 	}
+	int matrixSize = counter;
 	
-	printf("Number of users sending messages between 8am and 9am: %d\n", counter);
+	char location[TEXT_SHORT];
+    FILE *user_fp;
+	counter = 0;
+	low = first_record_id;
+	high = last_record_id;
+	save = -1;
+	char comma[2] = ",";
+	char * token1;
+	char * token2;
+	int currentUser = -1;
+	int currentMax = -1;
+	int temp;
+	
+	while(low <= high) {
+		mid = low + (high - low) / 2;
+		sprintf(path, "data/user_%06d.dat", mid);
+		user_fp = fopen(path, "r");
+		
+		fscanf(user_fp, "%d\t%*[^\t]\t%[^\n]\n", &user_id, location);
+		fclose(user_fp);
+		
+		token1 = strtok(location, comma);
+		token2 = strtok(NULL, comma);
+		if(token2 == NULL) {
+			token2 = token1;
+		}
+		//printf("1st token2 %s\n", token2);
+		
+		if(strcmp(token2, "Nebraska") == 0) {
+			//if equal break loop
+			//printf("1st user_id %d\n", user_id);
+			temp = inMatrix(user_id, matrix, matrixSize);
+			if(temp != -1) {
+				if(matrix[temp][1] > currentMax) {
+					currentUser = matrix[temp][0];
+					currentMax = matrix[temp][1];
+				}
+			}
+			save = mid;
+			break;
+		} else if (strcmp(token2, "Nebraska") < 0) {
+			//if smaller then check upper list
+			low = mid + 1;
+		} else {
+			//if larger then check lower list
+			high = mid - 1;
+		}
+	}
+	
+	if(save != -1) {
+		//Check above and below
+		while(mid >= low) {
+			mid--;
+			sprintf(path, "data/user_%06d.dat", mid);
+			user_fp = fopen(path, "r");
+			
+			fscanf(user_fp, "%d\t%*[^\t]\t%[^\n]\n", &user_id, location);
+			fclose(user_fp);
+			
+			token1 = strtok(location, comma);
+			token2 = strtok(NULL, comma);
+			if(token2 == NULL) {
+				token2 = token1;
+			}
+			//printf("2nd token2 %s\n", token2);
+			
+			if(strcmp(token2, "Nebraska") == 0) {
+				//printf("2nd user_id %d\n", user_id);
+				temp = inMatrix(user_id, matrix, matrixSize);
+				if(temp != -1) {
+					if(matrix[temp][1] > currentMax) {
+						currentUser = matrix[temp][0];
+						currentMax = matrix[temp][1];
+					}
+				}
+			} else {
+				break;
+			}
+		}
+		while(save <= high) {
+			save++;
+			sprintf(path, "data/user_%06d.dat", save);
+			user_fp = fopen(path, "r");
+			
+			fscanf(user_fp, "%d\t%*[^\t]\t%[^\n]\n", &user_id, location);
+			fclose(user_fp);
+			
+			token1 = strtok(location, comma);
+			token2 = strtok(NULL, comma);
+			if(token2 == NULL) {
+				token2 = token1;
+			}
+			//printf("3rd token2 %s\n", token2);
+			
+			if(strcmp(token2, "Nebraska") == 0) {
+				//printf("3rd user_id %d\n", user_id);
+				temp = inMatrix(user_id, matrix, matrixSize);
+				if(temp != -1) {
+					if(matrix[temp][1] > currentMax) {
+						currentUser = matrix[temp][0];
+						currentMax = matrix[temp][1];
+					}
+				}
+			} else {
+				break;
+			}
+		}
+	}
+	
+	printf("Nebraska user who sent maximum number of messages between 8am and 9am: %d\n", currentUser);
 	
 	/* =========== end of data processing code ================ */
 	gettimeofday(&time_end, NULL);
@@ -413,4 +514,27 @@ bool inArray(int val, int * arr, int size) {
 		}
 	}
 	return false;
+}
+
+int toMatrix(int val, int matrix[4000][2], int size) {
+	int i;
+	for(i = 0; i < size; i++) {
+		if(matrix[i][0] == val) {
+			matrix[i][1]++;
+			return size;
+		}
+	}
+	matrix[size][0] = val;
+	matrix[size][1] = 1;
+	return size + 1;
+}
+
+int inMatrix(int val, int matrix[4000][2], int size) {
+	int i;
+	for(i = 0; i < size; i++) {
+		if(matrix[i][0] == val) {
+			return i;
+		}
+	}
+	return -1;
 }
