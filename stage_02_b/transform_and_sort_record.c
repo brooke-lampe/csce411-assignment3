@@ -174,7 +174,6 @@ void sort_records(int first_record_id, int last_record_id) {
     /* Rewrite messages from sorted array */ 
     j = 0; 
     int k = 0;
-    printf("%d\n", num_of_message_files);
     for (i = 0; i <= num_of_message_files; i++) {
         sprintf(path, "data/message_%06d.dat", i);
         FILE *message_fp = fopen(path, "w");
