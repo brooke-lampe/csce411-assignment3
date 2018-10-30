@@ -20,7 +20,9 @@ void remove_trailing_comma(char * location);
 void transform_record(int first_record_id, int last_record_id);
 void sort_records(int first_record_id, int last_record_id);
 int compareByName(const void *a, const void *b);
+int compareByLocation(const void *a, const void *b);
 int compare_by_date(const void *a, const void *b);
+int compare_by_time(const void *a, const void *b);
 
 int main(int argc, char **argv)
 {
@@ -140,7 +142,7 @@ void sort_records(int first_record_id, int last_record_id) {
     }
 
     /* enter how query should be filtered compareByName or compareByLocation*/
-    qsort(users, last_record_id-first_record_id+1, sizeof(struct user), compareByName);
+    qsort(users, last_record_id-first_record_id+1, sizeof(struct user), compareByLocation);
     
     /* Rewrite users from sorted array */
     for (i = 0; i <= (last_record_id-first_record_id); i++) {
@@ -168,12 +170,11 @@ void sort_records(int first_record_id, int last_record_id) {
     }
     
     /* Sorting Messages by Date */
-    qsort(messages, message_number, sizeof(struct message), compare_by_date);
+    qsort(messages, message_number, sizeof(struct message), compare_by_time);
 
     /* Rewrite messages from sorted array */ 
     j = 0; 
     int k = 0;
-    printf("%d\n", num_of_message_files);
     for (i = 0; i <= num_of_message_files; i++) {
         sprintf(path, "data/message_%06d.dat", i);
         FILE *message_fp = fopen(path, "w");
@@ -233,6 +234,28 @@ int compare_by_date(const void *a, const void *b) {
     }
 }
 
+int compare_by_time(const void *a, const void *b) {
+    struct message *message1 = (struct message*)a;
+    struct message *message2 = (struct message*)b;
+    int hour1, hour2, minutes1, minutes2;
+    sscanf(message1->date, "%*d/%*d/%*d %d:%d", &hour1, &minutes1); 
+    sscanf(message2->date, "%*d/%*d/%*d %d:%d", &hour2, &minutes2);
+
+	if (hour1 > hour2) {
+		return 1;
+	} else if (hour2 > hour1) {
+		return -1;
+	} else {
+		if (minutes1 > minutes2) {
+			return 1;
+		} else if (minutes2 > minutes1) {
+			return -1;
+		} else {
+			return 0;
+		}
+	}  
+}
+
 int compareByName(const void *a, const void *b) {
      struct user *user1 = (struct user *)a;
      struct user *user2 = (struct user *)b;
@@ -242,7 +265,30 @@ int compareByName(const void *a, const void *b) {
 int compareByLocation(const void *a, const void *b) {
      struct user *user1 = (struct user *)a;
      struct user *user2 = (struct user *)b;
-     return strcmp(user1->location, user2->location); 
+	 
+	 char comma[2] = ",";
+	 char location1[TEXT_SHORT], location2[TEXT_SHORT];
+	 char * token1 = NULL;
+	 char * token2 = NULL;
+	 
+	 if(user1->location != NULL) {
+		 strcpy(location1, user1->location);
+		 token1 = strtok(location1, comma);
+		 token1 = strtok(NULL, comma);
+		 if(token1 == NULL) {
+			 token1 = location1;
+		 }
+	 }
+	 
+	 if(user2->location != NULL) {
+		 strcpy(location2, user2->location);
+		 token2 = strtok(location2, comma);
+		 token2 = strtok(NULL, comma);
+		 if(token2 == NULL) {
+			token2 = location2;
+		 }
+	 }
+     return strcmp(token1, token2); 
 }
 
 void remove_trailing_comma(char * location) {
