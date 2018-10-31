@@ -18,23 +18,6 @@ public class BuildTree {
 		long elapsedTime = System.currentTimeMillis() - start;
 		System.out.printf("Two B Plus Trees are created: one for users and one for messages\n");
 		System.out.print("Processing Time " + elapsedTime / 1000F + "\n\n");
-		// ---------------------------------------------------------------------------------------------
-
-		// ----- Step B ----
-		start = System.currentTimeMillis();
-		LeafNode<String> resultNode = usersTree.searchUserByLocation("Nebraska");
-		Set<Integer> users = resultNode.getUsers("Nebraska");
-		elapsedTime = System.currentTimeMillis() - start;
-		System.out.printf("The number of users who are from Nebraska is %d\n", users.size());
-		System.out.print("Processing Time " + elapsedTime / 1000F + "\n\n");
-
-		start = System.currentTimeMillis();
-		resultNode = messagesTree.searchMessageByTime();
-		Map<Integer, Integer> userMessagesMap = resultNode.countMessages();
-		elapsedTime = System.currentTimeMillis() - start;
-		System.out.printf("The number of users who sent messages between 8am and 9am is %d\n", userMessagesMap.size());
-		System.out.print("Processing Time " + elapsedTime / 1000F + "\n\n");
-
 	}
 
 	private static BPlusTree<String> buildTree(String[] keys) {

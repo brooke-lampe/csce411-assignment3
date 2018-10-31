@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BPlusTree<T> {
-	protected static final int FAN_OUT = 10;
+	protected static final int FAN_OUT = 200;
 	private InnerNode<T> root;
 
 	public BPlusTree(InnerNode<T> root) {
