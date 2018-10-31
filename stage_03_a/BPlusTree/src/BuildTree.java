@@ -1,10 +1,7 @@
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class BuildTree {
 
@@ -15,13 +12,28 @@ public class BuildTree {
 			usersFileNames[i] = String.format("data/users/user_%06d.dat", i);
 			messagesFileNames[i] = String.format("data/messages/message_%06d.dat", i);
 		}
-
+		long start = System.currentTimeMillis();
 		BPlusTree<String> usersTree = buildTree(usersFileNames);
 		BPlusTree<String> messagesTree = buildTree(messagesFileNames);
+		long elapsedTime = System.currentTimeMillis() - start;
+		System.out.printf("Two B Plus Trees are created: one for users and one for messages\n");
+		System.out.print("Processing Time " + elapsedTime / 1000F + "\n\n");
+		// ---------------------------------------------------------------------------------------------
 
-		LeafNode<String> resultNode = usersTree.search("Nebraska");
-		int count = resultNode.countKeys("Nebraska");
-		System.out.printf("Nebraska %d", count);
+		// ----- Step B ----
+		start = System.currentTimeMillis();
+		LeafNode<String> resultNode = usersTree.searchUserByLocation("Nebraska");
+		Set<Integer> users = resultNode.getUsers("Nebraska");
+		elapsedTime = System.currentTimeMillis() - start;
+		System.out.printf("The number of users who are from Nebraska is %d\n", users.size());
+		System.out.print("Processing Time " + elapsedTime / 1000F + "\n\n");
+
+		start = System.currentTimeMillis();
+		resultNode = messagesTree.searchMessageByTime();
+		Map<Integer, Integer> userMessagesMap = resultNode.countMessages();
+		elapsedTime = System.currentTimeMillis() - start;
+		System.out.printf("The number of users who sent messages between 8am and 9am is %d\n", userMessagesMap.size());
+		System.out.print("Processing Time " + elapsedTime / 1000F + "\n\n");
 
 	}
 
@@ -43,7 +55,6 @@ public class BuildTree {
 				currentLeafNode = newLeaf;
 			}
 		}
-
 		return tree;
 	}
 

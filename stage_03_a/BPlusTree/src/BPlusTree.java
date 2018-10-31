@@ -1,12 +1,8 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BPlusTree<T> {
-	protected static final int FAN_OUT = 200;
+	protected static final int FAN_OUT = 10;
 	private InnerNode<T> root;
 
 	public BPlusTree(InnerNode<T> root) {
@@ -20,49 +16,45 @@ public class BPlusTree<T> {
 			return this.splitNode(node);
 		}
 		return node;
-
 	}
 
-	public LeafNode<T> search(T key) {
-		return this.search(key, this.root);
+	public LeafNode<T> searchUserByLocation(T location) {
+		return this.searchUserByLocation(location, this.root);
 	}
-
-	private LeafNode<T> search(T key, Node<T> node) {
+	
+	public LeafNode<T> searchMessageByTime() {
+		return this.searchMessageByTime(this.root);
+	} 
+	
+	private LeafNode<T> searchMessageByTime(Node<T> node) {
 		if (node instanceof LeafNode) {
 			return (LeafNode<T>) node;
 		}
 		int i = 0;
 		while (i != node.size()) {
-			if (compareUserLocation((String) node.getKey(i), (String) key) <= 0) {
+			if (Compare.messageByTime((String) node.getKey(i)) <= 0) {
 				break;
 			}
 			i++;
 		}
-		return this.search(key, ((InnerNode<T>) node).getChild(i));
+		return this.searchMessageByTime(((InnerNode<T>) node).getChild(i));
 	}
 
-	public static int compareUserLocation(String fileName, String key) {
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(fileName));
-			String[] location = reader.readLine().split("\t");
-			reader.close();
-			if (location.length >= 3) {
-				String[] locationArray = location[2].split(",");
-				if (locationArray.length >= 2) {
-					return key.compareTo(locationArray[1]);
-				}
-			}
-			reader.close();
-		} catch (FileNotFoundException e) {
-			System.err.printf("Could not read file %s", fileName);
-			System.exit(0);
-		} catch (IOException e) {
-			System.err.printf("Could not read lines of %s", fileName);
-			System.exit(0);
+	private LeafNode<T> searchUserByLocation(T location, Node<T> node) {
+		if (node instanceof LeafNode) {
+			return (LeafNode<T>) node;
 		}
-		return 1;
+		int i = 0;
+		while (i != node.size()) {
+			if (Compare.userByLocation((String) location, (String) node.getKey(i)) <= 0) {
+				break;
+			}
+			i++;
+		}
+		return this.searchUserByLocation(location, ((InnerNode<T>) node).getChild(i));
 	}
 
+	
 	/**
 	 * @param node
 	 *            the inner node to be split
