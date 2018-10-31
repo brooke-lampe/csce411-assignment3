@@ -16,4 +16,28 @@ public class LeafNode<T> extends Node<T> {
 		this.addKey(key);
 		return null;
 	}
+
+	public int countKeys(T key) {
+		LeafNode<T> current = this;
+		int count = 0;
+		boolean found = false;
+		int i = 0;
+		while (true) {
+			for (T nodeKey : current.getKeys()) {
+				if (BPlusTree.compareUserLocation((String) nodeKey, (String) key) == 0) {
+					found = true;
+					count++;
+				} else if (found) {
+					found = false;
+					break;
+				}
+			}
+			if (!found && i > 1) {
+				break;
+			}
+			current = (LeafNode<T>) current.getNext();
+			i++;
+		}
+		return count;
+	}
 }

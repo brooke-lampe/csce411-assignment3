@@ -18,26 +18,11 @@ public class BuildTree {
 
 		BPlusTree<String> usersTree = buildTree(usersFileNames);
 		BPlusTree<String> messagesTree = buildTree(messagesFileNames);
-	}
 
-	private static int compareUserLocation(String fileName, String key) {
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(fileName));
-			String[] location = reader.readLine().split("\t");
-			reader.close();
-			if (location.length >= 3) {
-				String state = location[2].split(",")[1];
-				return key.compareTo(state);
-			}
-			reader.close();
-		} catch (FileNotFoundException e) {
-			System.err.printf("Could not read file %s", fileName);
-			System.exit(0);
-		} catch (IOException e) {
-			System.err.printf("Could not read lines of %s", fileName);
-			System.exit(0);
-		}
-		return 1;
+		LeafNode<String> resultNode = usersTree.search("Nebraska");
+		int count = resultNode.countKeys("Nebraska");
+		System.out.printf("Nebraska %d", count);
+
 	}
 
 	private static BPlusTree<String> buildTree(String[] keys) {

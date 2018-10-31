@@ -1,3 +1,7 @@
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +21,46 @@ public class BPlusTree<T> {
 		}
 		return node;
 
+	}
+
+	public LeafNode<T> search(T key) {
+		return this.search(key, this.root);
+	}
+
+	private LeafNode<T> search(T key, Node<T> node) {
+		if (node instanceof LeafNode) {
+			return (LeafNode<T>) node;
+		}
+		int i = 0;
+		while (i != node.size()) {
+			if (compareUserLocation((String) node.getKey(i), (String) key) <= 0) {
+				break;
+			}
+			i++;
+		}
+		return this.search(key, ((InnerNode<T>) node).getChild(i));
+	}
+
+	public static int compareUserLocation(String fileName, String key) {
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(fileName));
+			String[] location = reader.readLine().split("\t");
+			reader.close();
+			if (location.length >= 3) {
+				String[] locationArray = location[2].split(",");
+				if (locationArray.length >= 2) {
+					return key.compareTo(locationArray[1]);
+				}
+			}
+			reader.close();
+		} catch (FileNotFoundException e) {
+			System.err.printf("Could not read file %s", fileName);
+			System.exit(0);
+		} catch (IOException e) {
+			System.err.printf("Could not read lines of %s", fileName);
+			System.exit(0);
+		}
+		return 1;
 	}
 
 	/**
