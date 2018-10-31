@@ -79,7 +79,7 @@ void transform_record(int first_record_id, int last_record_id) {
 
         free_record(rp);
     }
-    int messages_per_file = floor(number_of_msgs/(last_record_id-first_record_id));
+    int messages_per_file = 1 + ((number_of_msgs + 1)/(last_record_id-first_record_id+1));
     
     int message_record_filenumber = 0;
     int messages_in_file = 0;
@@ -87,7 +87,8 @@ void transform_record(int first_record_id, int last_record_id) {
     sprintf(path, "data/message_%06d.dat", message_record_filenumber);
     FILE *message_file = fopen(path, "w+");
 
-    for (i = first_record_id; i <= last_record_id; i++) {
+    int changed = 0;
+	for (i = first_record_id; i <= last_record_id; i++) {
         sprintf(filename, "../data/record_%06d.dat", i);
         FILE *fp = fopen(filename,"rb");
         if (!fp) {
@@ -98,7 +99,10 @@ void transform_record(int first_record_id, int last_record_id) {
         /* read the record from the file */
         record_t *rp = read_record(fp);
         for (j = 0; j < rp->message_num; j++) {
-                    
+            if (changed == 0 && message_record_filenumber == 400){
+				messages_per_file--;
+				changed = 1;
+			}
             if (messages_in_file == messages_per_file) {
                 fclose(message_file);
                 message_record_filenumber++; 
@@ -151,12 +155,11 @@ void sort_records(int first_record_id, int last_record_id) {
         fprintf(user_fp, "%06d\t%s\t%s\n", users[i].user_id, users[i].name, users[i].location);
         fclose(user_fp);
     }
-
+	
     /* declare */
     struct message *messages = malloc(sizeof(struct message) * message_number);
-    int messages_per_file = ceil(message_number/(last_record_id-first_record_id));
-    int num_of_message_files = ceil(message_number/messages_per_file);
-
+    int num_of_message_files = last_record_id-first_record_id;
+	int messages_per_file = 1 + ((message_number - 1)/(num_of_message_files + 1));
     /* Populate message array */ 
     int j = 0; 
     for (i = 0; i <= num_of_message_files; i++) {
@@ -175,11 +178,14 @@ void sort_records(int first_record_id, int last_record_id) {
     /* Rewrite messages from sorted array */ 
     j = 0; 
     int k = 0;
+	printf("\nnumber of mess per file %d\n", messages_per_file);
     for (i = 0; i <= num_of_message_files; i++) {
+		if(i == 400){
+				messages_per_file--;
+		}
         sprintf(path, "data/message_%06d.dat", i);
         FILE *message_fp = fopen(path, "w");
         while (j < messages_per_file) {
-            if (k >= message_number) break;
             fprintf(message_fp, "%06d\t%s\t%s\n", messages[k].user_id, messages[k].date, messages[k].text);
             j++;
             k++;
@@ -190,7 +196,7 @@ void sort_records(int first_record_id, int last_record_id) {
 
     /* Release Heap Memory Usage */
     free(users);
-    free(messages);
+	free(messages);
 }
 
 int compare_by_date(const void *a, const void *b) {
